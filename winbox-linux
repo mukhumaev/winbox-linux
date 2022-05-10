@@ -1,0 +1,188 @@
+#!/bin/env bash
+
+[ -z "${DEPENDS_PACKAGES}" ] && DEPENDS_PACKAGES="wine wget"
+[ -z "${DESKTOP_FILE}" ] && DESKTOP_FILE="/usr/share/applications/winbox.desktop"
+[ -z "${WINBOX_EXE}" ] && WINBOX_EXE="/usr/local/bin/winbox64.exe"
+[ -z "${URL_WINBOX}" ] && URL_WINBOX="https://mt.lv/winbox64"
+[ -z "${EXEC_FILE}" ] && EXEC_FILE="/usr/local/bin/winbox"
+
+function error_exit(){
+    echo -e "EXIT. $*"
+    exit 1
+}
+
+function initial_check(){
+    [ $(id -u) -eq 0 ] || error_exit "You need run script under root or sudo\n $(print_info)"
+    [ "$(arch)" = "x86_64" ] || error_exit "Unsupported architecture\nYour arch: '$(arch)'\nSupport only: 'x86_64'"
+}
+
+function install_depends_packages(){
+    echo -n "Installing depends packages...   "
+    
+    local DEPENDS_PACKAGES=(${DEPENDS_PACKAGES})
+    local PACKAGE_MANAGERS_LIST=(apt dnf yum pacman)
+    local PACKAGE_MANAGER=""
+
+    for MANAGER in ${PACKAGE_MANAGERS_LIST[@]}; do
+        if [[ $($MANAGER --help) ]]; then 
+            PACKAGE_MANAGER=${MANAGER}
+            break
+        fi
+    done
+
+    for PACKAGE in ${DEPENDS_PACKAGES[@]}; do
+        case ${PACKAGE_MANAGER} in 
+        dnf|yum)
+            dnf -q -y install ${PACKAGE}  > /dev/null 2>&1 || yum -q -y install ${PACKAGE} > /dev/null 2>&1
+        ;;
+
+        apt)
+            apt -q -y install ${PACKAGE}  > /dev/null 2>&1
+        ;;
+
+        pacman)
+            sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf > /dev/null 2>&1 
+            pacman -Sy > /dev/null 2>&1 
+            pacman -Sq --noconfirm ${PACKAGE} > /dev/null 2>&1
+        ;;
+        
+        *)
+            error_exit "Unsupported OS"
+        ;;
+        esac
+
+        [[ $(${PACKAGE} --help) ]] || error_exit "Can't install package ${PACKAGE}"
+    done
+    
+    echo "Done"
+}
+
+function winbox_download(){
+    echo -n "Downloading winbox...  "
+    wget -q -c -O ${WINBOX_EXE} ${URL_WINBOX} || error_exit "Can't download and install winbox" && chmod a+rwx ${WINBOX_EXE}
+    echo "Done"
+}
+
+function create_exec_launcher(){
+    [ ! -d /usr/local/bin/ ] && mkdir -p /usr/local/bin
+    echo -n "Creating exec launcher '${EXEC_FILE}'...   "
+    echo "#! /bin/bash
+FREETYPE_PROPERTIES=\"truetype:interpreter-version=35\" wine64 ${WINBOX_EXE} \$*" | tee ${EXEC_FILE} > /dev/null && chmod +x ${EXEC_FILE}
+    [ -f ${EXEC_FILE} ] || error_exit "Can't create exec file '${EXEC_FILE}'"
+    echo "Done"
+}
+
+function create_desktop_launcher(){
+
+    echo -n "Creating desktop file...   "
+    echo "[Desktop Entry]
+Name=Winbox
+GenericName=Configuration tool for RouterOS
+Comment=Configuration tool for RouterOS
+Exec=${EXEC_FILE}
+Icon=winbox
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=$(basename ${WINBOX_EXE})
+Categories=Network;RemoteAccess;
+Keywords=winbox;mikrotik;routeros;ros;mtik;
+" | tee ${DESKTOP_FILE} > /dev/null
+
+    [ -f ${DESKTOP_FILE} ] || error_exit "Can't create desktop file '${DESKTOP_FILE}'"
+    echo "Done"
+}
+
+function winbox_icons(){
+
+    [[ -d "$(pwd)/icons" ]] || error_exit "Folder icons is not found in workdir"
+
+    local ICON_SIZE_LIST=($(ls icons | egrep -o "[0-9]{1,4}x[0-9]{1,4}" | tr "\n" " "))
+    local ARG=$1
+
+    case $ARG in
+    install|setup)
+        echo -n "Copying icons...   "
+        for ICON_SIZE in ${ICON_SIZE_LIST[@]}; do
+            mkdir -p /usr/share/icons/hicolor/${ICON_SIZE}/apps/
+            cp -f icons/winbox-${ICON_SIZE}.png /usr/share/icons/hicolor/${ICON_SIZE}/apps/winbox.png
+        done
+
+        [[ $(find /usr/share/icons/hicolor/* -name winbox.png) ]] || error_exit "Can't copy icons"
+    ;;
+    
+    uninstall|remove|purge)
+        echo -n "Removing icons...  "
+        for ICON_SIZE in ${ICON_SIZE_LIST[@]}; do
+            rm -rf /usr/share/icons/hicolor/${ICON_SIZE}/apps/winbox.png
+        done
+    ;;
+    
+    *)
+    ;;
+    esac
+
+    [[ $(gtk-update-icon-cache ) ]] && gtk-update-icon-cache -f -t /usr/share/icons/hicolor > /dev/null 2>&1
+    echo "Done"
+}
+
+function print_info(){
+    echo "
+USAGE EXAMPLE:
+
+with root:
+    [ENV=VALUE] $0 install                Install winbox
+    [ENV=VALUE] $0 uninstall              Uninstall winbox
+
+without root (using sudo):
+    sudo [ENV=VALUE] $0 install           Install winbox
+    sudo [ENV=VALUE] $0 uninstall         Uninstall winbox
+
+SUPPORTED ENV'S:
+        
+    DEPENDS_PACKAGES                      List of dependencies
+                                          Forexample: '${DEPENDS_PACKAGES}'
+
+    DESKTOP_FILE                          Linux '.desktop' file location
+                                          Forexample: '${DESKTOP_FILE}'
+
+    WINBOX_EXE                            Winbox executable file location
+                                          Forexample: '${WINBOX_EXE}'
+
+    URL_WINBOX                            URL to download '${WINBOX_EXE}' file
+                                          Forexample: '${URL_WINBOX}'
+
+    EXEC_FILE                             Location to store winbox run script
+                                          Forexample: '${EXEC_FILE}'
+"
+}
+
+function main(){
+    local ARG=$1
+
+    case $ARG in
+    install|setup)
+        echo "Started installer...   "
+        initial_check
+        install_depends_packages
+        winbox_download
+        winbox_icons install
+        create_exec_launcher
+        create_desktop_launcher
+        echo "Success! Winbox installed"
+    ;;
+
+    uninstall|remove|purge)
+        echo "Uninstalling winbox...   "
+        rm -rf ${EXEC_FILE} ${WINBOX_EXE} ${DESKTOP_FILE}
+        winbox_icons uninstall
+        echo "Success! Winbox uninstalled"
+    ;;
+
+    *)
+        print_info
+    ;;
+    esac
+}
+
+main $*

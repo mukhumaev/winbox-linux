@@ -1,4 +1,4 @@
-# winbox-installer
+# winbox-linux
 A simple helper script to install Mikrotik's Winbox in GNU/Linux
 
 ## Feature:
@@ -9,26 +9,42 @@ A simple helper script to install Mikrotik's Winbox in GNU/Linux
 5. Latest winbox from https://mikrotik.com/download
 
 ## How to install:
-Copy and paste this commands to your terminal:
+Copy and paste this into your terminal::
 
-1. `cd /tmp`
-2. `git clone https://github.com/mriza/winbox-installer.git`
-3. `cd winbox-installer`
-4. `sudo ./winbox-setup install` **OR** `sudo bash winbox-setup install`
-
-## Firewall setting:
-On Fedora/CentOS/Redhat, if you experience neighbor discovery problems, open the port in the firewall ( thanks @yrubdab )
-
-`firewall-cmd --permanent --add-port=5678/udp`
-
-`firewall-cmd --reload`
-
-## Icon cache in GTK based desktop:
-Optional step for GTK based desktop, if the icon is not loaded or loaded with wrong size. Update icon cache with this command:
-
-`gtk-update-icon-cache -f -t /usr/share/icons/hicolor`
+```
+cd /tmp && \
+git clone https://github.com/mukhumaev/winbox-linux.git && \
+cd winbox-linux && \
+sudo ./winbox-linux install 
+```
 
 ## How to remove:
 If you want to remove winbox, just run this command:
 
-`sudo ./winbox-setup remove` **OR** `sudo ./winbox-setup remove`
+`sudo ./winbox-linux uninstall`
+
+## Supported ENV's:
+You can change the behavior of the script by setting the environment parameters
+```
+DEPENDS_PACKAGES                      List of dependencies
+                                        Forexample: 'wine wget'
+
+DESKTOP_FILE                          Linux '.desktop' file location
+                                        Forexample: '/usr/share/applications/winbox.desktop'
+
+WINBOX_EXE                            Winbox executable file location
+                                        Forexample: '/usr/local/bin/winbox64.exe'
+
+URL_WINBOX                            URL to download '/usr/local/bin/winbox64.exe' file
+                                        Forexample: 'https://mt.lv/winbox64'
+
+EXEC_FILE                             Location to store winbox run script
+                                        Forexample: '/usr/local/bin/winbox'
+```
+
+## Firewall setting:
+On Fedora/CentOS/Redhat, if you experience neighbor discovery problems, open the port in the firewall
+
+`firewall-cmd --permanent --add-port=5678/udp`
+
+`firewall-cmd --reload`
