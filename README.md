@@ -7,6 +7,7 @@ A simple helper script to install Mikrotik's Winbox in GNU/Linux
 3. Upgrades wine (from the distribution's repo) to a newer version (only for Fedora, RHEL, CentOS, IGN)
 4. Menu entry in the application launcher
 5. Latest winbox from https://mikrotik.com/download
+6. Supports launch from terminal
 
 ## How to install:
 Copy and paste this into your terminal::
@@ -24,22 +25,22 @@ If you want to remove winbox, just run this command:
 `sudo ./winbox-linux uninstall`
 
 ## Supported ENV's:
-You can change the behavior of the script by setting the environment parameters
+You can change the behavior of the script by setting the environment parameters:
 ```
 DEPENDS_PACKAGES                      List of dependencies
-                                        Forexample: 'wine wget'
+                                        Example: 'wine wget'
 
 DESKTOP_FILE                          Linux '.desktop' file location
-                                        Forexample: '/usr/share/applications/winbox.desktop'
+                                        Example: '/usr/share/applications/winbox.desktop'
 
 WINBOX_EXE                            Winbox executable file location
-                                        Forexample: '/usr/local/bin/winbox64.exe'
+                                        Example: '/usr/local/bin/winbox64.exe'
 
 URL_WINBOX                            URL to download '/usr/local/bin/winbox64.exe' file
-                                        Forexample: 'https://mt.lv/winbox64'
+                                        Example: 'https://mt.lv/winbox64'
 
 EXEC_FILE                             Location to store winbox run script
-                                        Forexample: '/usr/local/bin/winbox'
+                                        Example: '/usr/local/bin/winbox'
 ```
 
 ## Firewall setting:
@@ -48,3 +49,10 @@ On Fedora/CentOS/Redhat, if you experience neighbor discovery problems, open the
 `firewall-cmd --permanent --add-port=5678/udp`
 
 `firewall-cmd --reload`
+
+## Run from terminal
+After installing winbox, you can run it through the terminal:
+`winbox [HOST] [USERNAME] [PASSWORD]`
+
+Example:
+`winbox 192.168.88.1 admin super-password`
