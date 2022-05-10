@@ -141,19 +141,19 @@ without root (using sudo):
 SUPPORTED ENV'S:
         
     DEPENDS_PACKAGES                      List of dependencies
-                                          Forexample: '${DEPENDS_PACKAGES}'
+                                          Example: '${DEPENDS_PACKAGES}'
 
     DESKTOP_FILE                          Linux '.desktop' file location
-                                          Forexample: '${DESKTOP_FILE}'
+                                          Example: '${DESKTOP_FILE}'
 
     WINBOX_EXE                            Winbox executable file location
-                                          Forexample: '${WINBOX_EXE}'
+                                          Example: '${WINBOX_EXE}'
 
     URL_WINBOX                            URL to download '${WINBOX_EXE}' file
-                                          Forexample: '${URL_WINBOX}'
+                                          Example: '${URL_WINBOX}'
 
     EXEC_FILE                             Location to store winbox run script
-                                          Forexample: '${EXEC_FILE}'
+                                          Example: '${EXEC_FILE}'
 "
 }
 
