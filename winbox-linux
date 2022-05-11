@@ -13,7 +13,7 @@ function error_exit(){
 
 function initial_check(){
     [ $(id -u) -eq 0 ] || error_exit "You need run script under root or sudo\n $(print_info)"
-    [ "$(arch)" = "x86_64" ] || error_exit "Unsupported architecture\nYour arch: '$(arch)'\nSupport only: 'x86_64'"
+    [ "$(uname -m)" = "x86_64" ] || error_exit "Unsupported architecture\nYour arch: '$(uname -m)'\nSupport only: 'x86_64'"
 }
 
 function install_depends_packages(){
