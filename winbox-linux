@@ -24,7 +24,7 @@ function install_depends_packages(){
     local PACKAGE_MANAGER=""
 
     for MANAGER in ${PACKAGE_MANAGERS_LIST[@]}; do
-        if [[ $($MANAGER --help) ]]; then 
+        if [[ $(command -v $MANAGER) ]]; then 
             PACKAGE_MANAGER=${MANAGER}
             break
         fi
