@@ -95,17 +95,20 @@ Keywords=winbox;mikrotik;routeros;ros;mtik;
 
 function winbox_icons(){
 
-    [[ -d "$(pwd)/icons" ]] || error_exit "Folder icons is not found in workdir"
+    local ICON_SIZE_LIST ARG ICON_FOLDER
 
-    local ICON_SIZE_LIST=($(ls icons | egrep -o "[0-9]{1,4}x[0-9]{1,4}" | tr "\n" " "))
-    local ARG=$1
+    ICON_FOLDER="$(dirname ${BASH_SOURCE[0]})/icons"
+    ICON_SIZE_LIST=($(ls "${ICON_FOLDER}" | egrep -o "[0-9]{1,4}x[0-9]{1,4}" | tr "\n" " "))
+    ARG=$1
+
+    [ -d "${ICON_FOLDER}" ] || error_exit "Folder icons is not found in workdir"
 
     case $ARG in
     install|setup)
         echo -n "Copying icons...   "
         for ICON_SIZE in ${ICON_SIZE_LIST[@]}; do
             mkdir -p /usr/share/icons/hicolor/${ICON_SIZE}/apps/
-            cp -f icons/winbox-${ICON_SIZE}.png /usr/share/icons/hicolor/${ICON_SIZE}/apps/winbox.png
+            cp -f ${ICON_FOLDER}/winbox-${ICON_SIZE}.png /usr/share/icons/hicolor/${ICON_SIZE}/apps/winbox.png
         done
 
         [[ $(find /usr/share/icons/hicolor/* -name winbox.png) ]] || error_exit "Can't copy icons"
