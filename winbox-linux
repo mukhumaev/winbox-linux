@@ -67,7 +67,7 @@ function create_exec_launcher(){
     [ ! -d /usr/local/bin/ ] && mkdir -p /usr/local/bin
     echo -n "Creating exec launcher '${EXEC_FILE}'...   "
     echo "#! /bin/bash
-FREETYPE_PROPERTIES=\"truetype:interpreter-version=35\" wine64 ${WINBOX_EXE} \$*" | tee ${EXEC_FILE} > /dev/null && chmod +x ${EXEC_FILE}
+FREETYPE_PROPERTIES=\"truetype:interpreter-version=35\" $(which wine64 || which wine) ${WINBOX_EXE} \$*" | tee ${EXEC_FILE} > /dev/null && chmod +x ${EXEC_FILE}
     [ -f ${EXEC_FILE} ] || error_exit "Can't create exec file '${EXEC_FILE}'"
     echo "Done"
 }
